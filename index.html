@@ -1,0 +1,2128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RecruiterRadar — Live Hiring Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08090d;
+  --surface: #0f1117;
+  --surface2: #161820;
+  --surface3: #1e2028;
+  --border: #2a2d38;
+  --accent: #f0c040;
+  --accent2: #e85d3c;
+  --accent3: #3caaff;
+  --text: #e8eaf2;
+  --text-muted: #6b7089;
+  --text-dim: #3d4160;
+  --success: #3cd49a;
+  --error: #e85d3c;
+  --mono: 'Space Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(240,192,64,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(240,192,64,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events:none;
+  z-index:0;
+}
+
+.topbar {
+  position:sticky;
+  top:0;
+  z-index:100;
+  background:rgba(8,9,13,0.92);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:0 32px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  height:60px;
+}
+
+.logo {
+  font-family:var(--mono);
+  font-size:1.1em;
+  font-weight:700;
+  color:var(--accent);
+  letter-spacing:0.05em;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.logo-dot {
+  width:8px; height:8px;
+  background:var(--accent2);
+  border-radius:50%;
+  animation: livepulse 1.5s infinite;
+}
+
+@keyframes livepulse {
+  0%,100%{opacity:1;transform:scale(1);}
+  50%{opacity:0.4;transform:scale(1.4);}
+}
+
+.live-badge {
+  font-family:var(--mono);
+  font-size:0.65em;
+  background:var(--accent2);
+  color:#fff;
+  padding:3px 8px;
+  border-radius:3px;
+  letter-spacing:0.12em;
+}
+
+.nav-tabs {
+  display:flex;
+  gap:4px;
+}
+
+.nav-tab {
+  font-family:var(--mono);
+  font-size:0.75em;
+  padding:6px 16px;
+  border:1px solid transparent;
+  border-radius:4px;
+  cursor:pointer;
+  color:var(--text-muted);
+  background:transparent;
+  transition:all .2s;
+  letter-spacing:0.06em;
+}
+
+.nav-tab.active {
+  background:var(--surface2);
+  border-color:var(--border);
+  color:var(--accent);
+}
+
+.nav-tab:hover:not(.active) {
+  color:var(--text);
+  border-color:var(--border);
+}
+
+.page { display:none; padding:28px 32px; max-width:1800px; margin:0 auto; position:relative; z-index:1; }
+.page.active { display:block; }
+
+.page-header {
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  margin-bottom:28px;
+  gap:20px;
+  flex-wrap:wrap;
+}
+
+.page-title {
+  font-family:var(--mono);
+  font-size:1.6em;
+  font-weight:700;
+  color:var(--text);
+  line-height:1;
+}
+
+.page-title span { color:var(--accent); }
+
+.page-sub {
+  font-size:0.85em;
+  color:var(--text-muted);
+  margin-top:6px;
+  font-weight:400;
+}
+
+.card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  overflow:hidden;
+}
+
+.card-head {
+  padding:16px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.card-title {
+  font-family:var(--mono);
+  font-size:0.75em;
+  color:var(--text-muted);
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+}
+
+.card-body { padding:20px; }
+
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+.grid-config { display:grid; grid-template-columns:340px 1fr; gap:20px; align-items:start; }
+
+@media(max-width:1100px){ .grid-config{grid-template-columns:1fr;} .grid-2{grid-template-columns:1fr;} }
+@media(max-width:800px){ .grid-3{grid-template-columns:1fr 1fr;} }
+
+.form-row { margin-bottom:14px; }
+
+.form-label {
+  display:block;
+  font-family:var(--mono);
+  font-size:0.7em;
+  letter-spacing:0.1em;
+  color:var(--text-muted);
+  text-transform:uppercase;
+  margin-bottom:6px;
+}
+
+.form-input, .form-select, .form-textarea {
+  width:100%;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:10px 13px;
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:0.82em;
+  transition:border-color .2s, box-shadow .2s;
+  outline:none;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(240,192,64,0.08);
+}
+
+.form-input::placeholder { color:var(--text-dim); }
+.form-textarea { resize:vertical; min-height:100px; }
+.form-select { appearance:none; cursor:pointer; }
+
+.btn {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:9px 18px;
+  border:none;
+  border-radius:6px;
+  font-family:var(--mono);
+  font-size:0.75em;
+  font-weight:700;
+  letter-spacing:0.06em;
+  cursor:pointer;
+  transition:all .2s;
+  white-space:nowrap;
+}
+
+.btn-accent {
+  background:var(--accent);
+  color:#08090d;
+}
+.btn-accent:hover { background:#f5d060; transform:translateY(-1px); box-shadow:0 6px 20px rgba(240,192,64,0.25); }
+
+.btn-danger {
+  background:var(--accent2);
+  color:white;
+}
+.btn-danger:hover { background:#f06648; }
+
+.btn-blue {
+  background:var(--accent3);
+  color:#08090d;
+}
+.btn-blue:hover { background:#5cb9ff; }
+
+.btn-ghost {
+  background:var(--surface2);
+  color:var(--text);
+  border:1px solid var(--border);
+}
+.btn-ghost:hover { border-color:var(--text-muted); }
+
+.btn-success {
+  background:var(--success);
+  color:#08090d;
+}
+
+.btn-sm { padding:6px 12px; font-size:0.68em; }
+.btn-full { width:100%; }
+
+.btn:disabled { opacity:0.4; cursor:not-allowed; transform:none !important; }
+
+.api-pills { display:flex; gap:8px; flex-wrap:wrap; }
+
+.api-pill {
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  padding:5px 12px;
+  border-radius:30px;
+  border:1px solid var(--border);
+  font-family:var(--mono);
+  font-size:0.65em;
+  letter-spacing:0.08em;
+  color:var(--text-muted);
+  background:var(--surface2);
+}
+
+.pill-dot {
+  width:6px; height:6px;
+  border-radius:50%;
+  background:var(--text-dim);
+  transition:background .3s;
+}
+
+.api-pill.connected .pill-dot { background:var(--success); animation:livepulse 2s infinite; }
+.api-pill.connected { color:var(--success); border-color:rgba(60,212,154,0.2); }
+.api-pill.error .pill-dot { background:var(--error); }
+.api-pill.error { color:var(--error); border-color:rgba(232,93,60,0.2); }
+
+.recruiter-table-wrap { overflow-x:auto; }
+
+table {
+  width:100%;
+  border-collapse:collapse;
+}
+
+thead tr {
+  border-bottom:1px solid var(--border);
+}
+
+th {
+  font-family:var(--mono);
+  font-size:0.65em;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  padding:12px 16px;
+  text-align:left;
+  font-weight:400;
+}
+
+tbody tr {
+  border-bottom:1px solid rgba(42,45,56,0.5);
+  transition:background .15s;
+}
+
+tbody tr:hover { background:var(--surface2); }
+
+td {
+  padding:14px 16px;
+  font-size:0.88em;
+  vertical-align:middle;
+}
+
+.recruiter-name-cell {
+  font-weight:600;
+  color:var(--text);
+}
+
+.company-cell {
+  font-family:var(--mono);
+  font-size:0.78em;
+  color:var(--accent3);
+}
+
+.roles-cell {
+  font-size:0.8em;
+  color:var(--text-muted);
+  max-width:200px;
+}
+
+.role-tag {
+  display:inline-block;
+  background:rgba(240,192,64,0.1);
+  border:1px solid rgba(240,192,64,0.2);
+  color:var(--accent);
+  padding:2px 8px;
+  border-radius:3px;
+  font-family:var(--mono);
+  font-size:0.7em;
+  margin:2px 2px 2px 0;
+}
+
+.city-tag {
+  font-family:var(--mono);
+  font-size:0.72em;
+  color:var(--text-muted);
+  background:var(--surface3);
+  padding:4px 10px;
+  border-radius:4px;
+  border:1px solid var(--border);
+}
+
+.email-tag {
+  font-family:var(--mono);
+  font-size:0.72em;
+  color:var(--accent3);
+}
+
+.sent-badge {
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  font-family:var(--mono);
+  font-size:0.65em;
+  color:var(--success);
+  background:rgba(60,212,154,0.1);
+  border:1px solid rgba(60,212,154,0.2);
+  padding:4px 10px;
+  border-radius:20px;
+}
+
+.new-badge {
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  font-family:var(--mono);
+  font-size:0.65em;
+  color:var(--accent2);
+  background:rgba(232,93,60,0.1);
+  border:1px solid rgba(232,93,60,0.2);
+  padding:4px 10px;
+  border-radius:20px;
+  animation:livepulse 2s infinite;
+}
+
+.email-panel {
+  position:sticky;
+  top:80px;
+}
+
+.selected-recruiter-banner {
+  background:linear-gradient(135deg, rgba(240,192,64,0.08), rgba(232,93,60,0.05));
+  border:1px solid rgba(240,192,64,0.2);
+  border-radius:8px;
+  padding:14px 16px;
+  margin-bottom:16px;
+}
+
+.banner-name {
+  font-weight:700;
+  font-size:1em;
+  color:var(--accent);
+}
+
+.banner-company {
+  font-family:var(--mono);
+  font-size:0.72em;
+  color:var(--text-muted);
+  margin-top:2px;
+}
+
+.banner-meta {
+  font-family:var(--mono);
+  font-size:0.68em;
+  color:var(--accent3);
+  margin-top:4px;
+}
+
+.email-subject-input {
+  width:100%;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:10px 13px;
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:0.8em;
+  outline:none;
+  margin-bottom:12px;
+  transition:border-color .2s;
+}
+
+.email-subject-input:focus { border-color:var(--accent); }
+
+.email-preview-box {
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:16px;
+  min-height:200px;
+  font-size:0.85em;
+  line-height:1.8;
+  color:var(--text);
+  white-space:pre-wrap;
+  word-break:break-word;
+  font-family:var(--sans);
+  margin-bottom:12px;
+  max-height:300px;
+  overflow-y:auto;
+}
+
+.email-preview-box.placeholder { color:var(--text-muted); font-style:italic; }
+
+.loading-state {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  padding:40px;
+  color:var(--text-muted);
+  font-family:var(--mono);
+  font-size:0.8em;
+}
+
+.spinner {
+  width:20px; height:20px;
+  border:2px solid var(--border);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+
+@keyframes spin { to{transform:rotate(360deg);} }
+
+.empty-state {
+  text-align:center;
+  padding:60px 20px;
+  color:var(--text-muted);
+}
+
+.empty-state .empty-icon {
+  font-size:3em;
+  margin-bottom:12px;
+  opacity:0.4;
+}
+
+.empty-state p { font-family:var(--mono); font-size:0.8em; }
+
+#toast-container {
+  position:fixed;
+  bottom:24px;
+  right:24px;
+  z-index:9999;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.toast {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:12px 18px;
+  font-family:var(--mono);
+  font-size:0.75em;
+  color:var(--text);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  animation:toastIn .3s ease;
+  box-shadow:0 8px 30px rgba(0,0,0,0.4);
+  max-width:320px;
+}
+
+.toast.success { border-color:rgba(60,212,154,0.3); }
+.toast.error { border-color:rgba(232,93,60,0.3); }
+
+@keyframes toastIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+
+.stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+@media(max-width:900px){ .stat-grid{grid-template-columns:1fr 1fr;} }
+
+.stat-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:20px;
+}
+
+.stat-num {
+  font-family:var(--mono);
+  font-size:2.2em;
+  font-weight:700;
+  line-height:1;
+  margin-bottom:4px;
+}
+
+.stat-label {
+  font-family:var(--mono);
+  font-size:0.65em;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--text-muted);
+}
+
+.stat-card:nth-child(1) .stat-num { color:var(--accent); }
+.stat-card:nth-child(2) .stat-num { color:var(--success); }
+.stat-card:nth-child(3) .stat-num { color:var(--accent3); }
+.stat-card:nth-child(4) .stat-num { color:var(--accent2); }
+
+.sent-company {
+  font-family:var(--mono);
+  font-size:0.72em;
+  color:var(--accent3);
+}
+
+.sent-roles {
+  font-size:0.8em;
+  color:var(--text-muted);
+}
+
+.sent-time {
+  font-family:var(--mono);
+  font-size:0.68em;
+  color:var(--text-dim);
+}
+
+.sent-preview {
+  font-size:0.78em;
+  color:var(--text-muted);
+  max-width:200px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.tab-row {
+  display:flex;
+  gap:4px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:20px;
+}
+
+.tab-pill {
+  font-family:var(--mono);
+  font-size:0.72em;
+  letter-spacing:0.08em;
+  padding:8px 16px;
+  background:transparent;
+  border:none;
+  color:var(--text-muted);
+  cursor:pointer;
+  border-bottom:2px solid transparent;
+  margin-bottom:-1px;
+  transition:all .2s;
+}
+
+.tab-pill.active { color:var(--accent); border-bottom-color:var(--accent); }
+.tab-pill:hover:not(.active) { color:var(--text); }
+
+.tab-pane { display:none; }
+.tab-pane.active { display:block; }
+
+.refresh-bar {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.auto-refresh-select {
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:7px 12px;
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:0.72em;
+  outline:none;
+  cursor:pointer;
+}
+
+.timer-badge {
+  font-family:var(--mono);
+  font-size:0.68em;
+  color:var(--text-muted);
+  background:var(--surface2);
+  border:1px solid var(--border);
+  padding:5px 10px;
+  border-radius:4px;
+}
+
+.filter-row {
+  display:flex;
+  gap:10px;
+  margin-bottom:16px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+.filter-input {
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:8px 13px;
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:0.75em;
+  outline:none;
+  flex:1;
+  min-width:140px;
+}
+
+.filter-input:focus { border-color:var(--accent); }
+.filter-input::placeholder { color:var(--text-dim); }
+
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:var(--surface); }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:var(--text-dim); }
+
+.divider { border:none; border-top:1px solid var(--border); margin:20px 0; }
+
+.hint-text {
+  font-family:var(--mono);
+  font-size:0.68em;
+  color:var(--text-dim);
+  margin-top:5px;
+}
+
+.section-divider {
+  font-family:var(--mono);
+  font-size:0.65em;
+  letter-spacing:0.15em;
+  text-transform:uppercase;
+  color:var(--text-dim);
+  padding:12px 0 8px;
+  border-top:1px solid var(--border);
+  margin-top:20px;
+}
+
+.email-toggle-row {
+  display:flex;
+  gap:6px;
+  margin-bottom:14px;
+}
+
+.toggle-btn {
+  flex:1;
+  padding:8px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:5px;
+  color:var(--text-muted);
+  font-family:var(--mono);
+  font-size:0.7em;
+  cursor:pointer;
+  text-align:center;
+  transition:all .2s;
+}
+
+.toggle-btn.active {
+  background:rgba(240,192,64,0.1);
+  border-color:var(--accent);
+  color:var(--accent);
+}
+
+.generate-bar {
+  display:flex;
+  gap:8px;
+  margin-bottom:12px;
+}
+
+.ai-typing { color:var(--accent); animation:blink .7s infinite; }
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
+
+.actor-info {
+  background:rgba(60,170,255,0.05);
+  border:1px solid rgba(60,170,255,0.15);
+  border-radius:6px;
+  padding:10px 14px;
+  margin-top:8px;
+}
+
+.actor-info p {
+  font-family:var(--mono);
+  font-size:0.68em;
+  color:var(--accent3);
+  line-height:1.6;
+}
+
+.keyword-tags {
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:8px;
+}
+
+.keyword-tag {
+  background:var(--surface3);
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:4px 10px;
+  font-family:var(--mono);
+  font-size:0.68em;
+  color:var(--text-muted);
+  cursor:pointer;
+  transition:all .2s;
+}
+
+.keyword-tag:hover, .keyword-tag.active {
+  border-color:var(--accent);
+  color:var(--accent);
+  background:rgba(240,192,64,0.05);
+}
+
+.compose-custom textarea {
+  width:100%;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:12px;
+  color:var(--text);
+  font-family:var(--sans);
+  font-size:0.85em;
+  outline:none;
+  min-height:200px;
+  resize:vertical;
+  line-height:1.7;
+  transition:border-color .2s;
+}
+
+.compose-custom textarea:focus { border-color:var(--accent); }
+
+.btn-delete {
+  background:transparent;
+  border:1px solid rgba(232,93,60,0.3);
+  color:var(--accent2);
+  font-family:var(--mono);
+  font-size:0.65em;
+  padding:5px 10px;
+  border-radius:4px;
+  cursor:pointer;
+  transition:all .2s;
+}
+
+.btn-delete:hover {
+  background:rgba(232,93,60,0.1);
+  border-color:var(--accent2);
+}
+
+/* ── MODEL BADGE ── */
+.model-badge {
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  font-family:var(--mono);
+  font-size:0.62em;
+  color:var(--accent3);
+  background:rgba(60,170,255,0.08);
+  border:1px solid rgba(60,170,255,0.2);
+  padding:3px 8px;
+  border-radius:20px;
+  margin-left:8px;
+}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="topbar">
+  <div class="logo">
+    <span class="logo-dot"></span>
+    RECRUITER<span style="color:var(--text-muted)">RADAR</span>
+    <span class="live-badge">LIVE</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchPage('prospecting', this)">⚡ Prospecting</button>
+    <button class="nav-tab" onclick="switchPage('config', this)">🔑 Config</button>
+    <button class="nav-tab" onclick="switchPage('dashboard', this)">📊 Dashboard</button>
+  </div>
+  <div class="api-pills" id="apiStatusPills">
+    <div class="api-pill" id="pill-vibe">
+      <span class="pill-dot"></span> VIBE
+    </div>
+    <div class="api-pill" id="pill-apify">
+      <span class="pill-dot"></span> APIFY
+    </div>
+    <div class="api-pill" id="pill-groq">
+      <span class="pill-dot"></span> GROQ
+    </div>
+  </div>
+</div>
+
+<!-- ████ PAGE: PROSPECTING ████ -->
+<div class="page active" id="page-prospecting">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Live <span>Recruiter</span> Feed</div>
+      <div class="page-sub">Recruiters hiring right now — filter by Fresher / Experienced · Contacted recruiters hidden automatically</div>
+    </div>
+    <div class="refresh-bar">
+      <select class="auto-refresh-select" id="filterExpLevel" onchange="applyFilters()" style="min-width:160px">
+        <option value="all">👥 All Levels</option>
+        <option value="fresher">🌱 Fresher / Entry-Level</option>
+        <option value="experienced">⚡ Experienced Only</option>
+      </select>
+      <input class="filter-input" id="filterCity" placeholder="Filter city…" style="width:120px" oninput="applyFilters()">
+      <input class="filter-input" id="filterRole" placeholder="Filter role…" style="width:130px" oninput="applyFilters()">
+      <select class="auto-refresh-select" id="autoRefreshInterval" onchange="setAutoRefresh()">
+        <option value="0">Manual only</option>
+        <option value="60">Auto: 1 min</option>
+        <option value="300">Auto: 5 min</option>
+        <option value="600">Auto: 10 min</option>
+        <option value="1800">Auto: 30 min</option>
+      </select>
+      <span class="timer-badge" id="timerDisplay">—</span>
+      <button class="btn btn-accent" onclick="fetchRecruiters()">⟳ Refresh Now</button>
+    </div>
+  </div>
+
+  <div class="grid-config" style="align-items:start">
+    <!-- LEFT: Table -->
+    <div style="min-width:0">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Active Recruiters</span>
+          <span id="recruiterCount" class="timer-badge">0 results</span>
+        </div>
+        <div id="recruiterTableWrap" class="recruiter-table-wrap">
+          <div class="empty-state">
+            <div class="empty-icon">📡</div>
+            <p>Configure API keys and hit Refresh Now</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Email Composer -->
+    <div class="email-panel">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">✉ Email Composer</span>
+          <span id="selectedTag" class="timer-badge">None selected</span>
+        </div>
+        <div class="card-body">
+
+          <div id="noSelectionMsg" style="text-align:center;padding:30px 0;color:var(--text-muted);font-family:var(--mono);font-size:0.78em;">
+            ← Select a recruiter from the table
+          </div>
+
+          <div id="composerBody" style="display:none">
+            <div class="selected-recruiter-banner" id="recruiterBanner">
+              <div class="banner-name" id="bName">—</div>
+              <div class="banner-company" id="bCompany">—</div>
+              <div class="banner-meta" id="bMeta">—</div>
+            </div>
+
+            <div class="email-toggle-row">
+              <div class="toggle-btn active" id="toggleAI" onclick="setEmailMode('ai')">✨ AI Generate</div>
+              <div class="toggle-btn" id="toggleCustom" onclick="setEmailMode('custom')">✍ Custom</div>
+            </div>
+
+            <!-- AI Mode -->
+            <div id="modeAI">
+              <div class="form-row">
+                <label class="form-label">Subject</label>
+                <input class="email-subject-input" id="emailSubject" placeholder="e.g. Exploring Opportunities at [Company]">
+              </div>
+              <div class="generate-bar">
+                <button class="btn btn-accent" style="flex:1" onclick="generateEmailAI()" id="genBtn">✨ Generate Email</button>
+              </div>
+              <div class="email-preview-box placeholder" id="emailPreview">
+                Hit Generate to craft a personalized outreach email using AI…
+              </div>
+
+              <!-- Send method toggle -->
+              <div style="display:flex;gap:6px;margin-bottom:10px" id="sendMethodRow">
+                <div class="toggle-btn active" id="smGmail" onclick="setSendMethod('gmail')" title="Opens Gmail compose in a new Chrome tab — pre-filled and ready to send">
+                  <span style="font-size:0.9em">📧</span> Gmail
+                </div>
+                <div class="toggle-btn" id="smMailto" onclick="setSendMethod('mailto')" title="Opens your system default mail app via mailto:">
+                  <span style="font-size:0.9em">🖥</span> Mail App
+                </div>
+              </div>
+
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-success" style="flex:1" onclick="sendEmailAction()" id="sendBtn">
+                  <span id="sendBtnIcon">📧</span> <span id="sendBtnLabel">Send via Gmail</span>
+                </button>
+                <button class="btn btn-ghost btn-sm" onclick="copyEmail()" title="Copy to clipboard">⎘</button>
+              </div>
+              <div class="hint-text" id="sendMethodHint" style="margin-top:6px">Opens Gmail compose in a new tab — pre-filled and ready to send</div>
+            </div>
+
+            <!-- Custom Mode -->
+            <div id="modeCustom" style="display:none" class="compose-custom">
+              <div class="form-row">
+                <label class="form-label">Subject</label>
+                <input class="form-input" id="customSubject" placeholder="Email subject…">
+              </div>
+              <div class="form-row">
+                <label class="form-label">Body</label>
+                <textarea id="customBody" placeholder="Write your email here…"></textarea>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-accent" style="flex:1" onclick="useCustom()">Use & Send</button>
+                <button class="btn btn-ghost btn-sm" onclick="setEmailMode('ai')">← AI</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Quick View -->
+      <div class="card" style="margin-top:14px">
+        <div class="card-head"><span class="card-title">Your Profile</span> <button class="btn btn-ghost btn-sm" onclick="switchPage('config', document.querySelectorAll('.nav-tab')[1])">Edit →</button></div>
+        <div class="card-body" style="font-family:var(--mono);font-size:0.75em;display:grid;gap:6px;color:var(--text-muted)">
+          <div><span style="color:var(--text-dim)">NAME </span><span id="qName" style="color:var(--text)">—</span></div>
+          <div><span style="color:var(--text-dim)">EMAIL</span> <span id="qEmail" style="color:var(--accent3)">—</span></div>
+          <div><span style="color:var(--text-dim)">PHONE</span> <span id="qPhone" style="color:var(--text)">—</span></div>
+          <div><span style="color:var(--text-dim)">LI   </span> <span id="qLI" style="color:var(--accent3)">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ████ PAGE: CONFIG ████ -->
+<div class="page" id="page-config">
+  <div class="page-header">
+    <div>
+      <div class="page-title">API <span>Configuration</span></div>
+      <div class="page-sub">Connect your data sources and set your outreach profile</div>
+    </div>
+    <button class="btn btn-accent" onclick="saveConfig()">💾 Save All Settings</button>
+  </div>
+
+  <div class="grid-2" style="align-items:start">
+    <!-- API Keys -->
+    <div style="display:grid;gap:16px">
+      <div class="card">
+        <div class="card-head"><span class="card-title">🔌 Data Sources</span></div>
+        <div class="card-body">
+
+          <div class="form-row">
+            <label class="form-label">Vibe Prospecting API Key</label>
+            <input class="form-input" id="cfgVibeKey" placeholder="vp_live_xxxxxx…">
+            <div class="hint-text">Get from → vibeprospecting.ai/api/keys</div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label">Vibe Prospecting Endpoint</label>
+            <input class="form-input" id="cfgVibeEndpoint" placeholder="https://api.vibeprospecting.ai/v1/recruiters">
+            <div class="hint-text">Default: https://api.vibeprospecting.ai/v1/recruiters</div>
+          </div>
+
+          <hr class="divider">
+
+          <div class="form-row">
+            <label class="form-label">Apify API Key</label>
+            <input class="form-input" id="cfgApifyKey" placeholder="apify_api_xxxxxx…">
+            <div class="hint-text">Get from → console.apify.com/account/integrations</div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label">Apify Actor ID (LinkedIn Scraper)</label>
+            <input class="form-input" id="cfgApifyActor" placeholder="e.g. apify/linkedin-jobs-scraper">
+            <div class="hint-text">Recommended: apify/linkedin-jobs-scraper</div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label">Search Keywords (for Apify)</label>
+            <input class="form-input" id="cfgKeywords" placeholder="DevOps Engineer, Cloud Architect, Data Engineer">
+            <div class="hint-text">Comma-separated roles to scrape from LinkedIn</div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label">Target Cities</label>
+            <input class="form-input" id="cfgCities" placeholder="Bangalore, Hyderabad, Noida, Gurugram, Mumbai">
+          </div>
+
+          <hr class="divider">
+
+          <div class="form-row">
+            <label class="form-label">Groq API Key (AI Email Generation)</label>
+            <input class="form-input" id="cfgGroqKey" placeholder="gsk_xxxxxxxxxxxxxxxx">
+            <div class="hint-text">Free key at → console.groq.com</div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label">
+              AI Model
+              <span class="model-badge" id="modelStatusBadge">● select a model</span>
+            </label>
+            <!-- ✅ FIXED: Updated models — Mixtral is decommissioned -->
+            <select class="form-select" id="cfgGroqModel" onchange="updateModelBadge()">
+              <option value="llama-3.3-70b-versatile">LLaMA 3.3 70B Versatile — Best Quality ⭐</option>
+              <option value="llama-3.1-8b-instant">LLaMA 3.1 8B Instant — Fastest</option>
+              <option value="gemma2-9b-it">Gemma 2 9B — Balanced</option>
+              <option value="llama3-70b-8192">LLaMA 3 70B 8192 — Legacy</option>
+              <option value="llama3-8b-8192">LLaMA 3 8B 8192 — Legacy Fast</option>
+            </select>
+            <div class="hint-text">⚠ mixtral-8x7b-32768 was decommissioned by Groq — use LLaMA 3.3 70B instead</div>
+          </div>
+
+          <div class="actor-info">
+            <p>💡 <strong>Apify Setup Guide:</strong><br>
+            1. Create an account at apify.com<br>
+            2. Get your API token from Account → Integrations<br>
+            3. Use Actor ID: <code>apify/linkedin-jobs-scraper</code><br>
+            4. The app will run the actor with your keywords and cities<br>
+            5. Results update automatically on each refresh</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Source Priority -->
+      <div class="card">
+        <div class="card-head"><span class="card-title">⚙ Fetch Strategy</span></div>
+        <div class="card-body">
+          <div class="form-row">
+            <label class="form-label">Primary Data Source</label>
+            <select class="form-select" id="cfgPrimarySource">
+              <option value="vibe">Vibe Prospecting (Real recruiter DB)</option>
+              <option value="apify">Apify (Scrape LinkedIn live)</option>
+              <option value="both">Both (Merge & deduplicate)</option>
+              <option value="sample">Sample Data (Demo mode)</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Experience Level Target</label>
+            <select class="form-select" id="cfgExpTarget">
+              <option value="all">All Levels (Fresher + Experienced)</option>
+              <option value="fresher">Fresher / Entry-Level Only</option>
+              <option value="experienced">Experienced Only</option>
+            </select>
+            <div class="hint-text">Filters Apify/Vibe results + auto-selects correct filter on prospecting page</div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Fresher-Specific Search Keywords (Apify)</label>
+            <input class="form-input" id="cfgFresherKeywords" placeholder="fresher DevOps, graduate trainee cloud, entry level data analyst, campus hire">
+            <div class="hint-text">Added to Apify search when Fresher mode is active</div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Max Recruiters per Refresh</label>
+            <input class="form-input" id="cfgMaxResults" placeholder="50" value="50">
+          </div>
+          <div class="form-row">
+            <label class="form-label">Hide contacted for (hours)</label>
+            <input class="form-input" id="cfgHideHours" placeholder="168" value="168">
+            <div class="hint-text">Contacted recruiters are hidden for this many hours (168 = 1 week)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile -->
+    <div class="card">
+      <div class="card-head"><span class="card-title">👤 Your Outreach Profile</span></div>
+      <div class="card-body">
+        <div class="form-row">
+          <label class="form-label">Full Name</label>
+          <input class="form-input" id="cfgName" placeholder="Your Name">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Your Email Address (Gmail)</label>
+          <input class="form-input" id="cfgEmail" placeholder="you@gmail.com">
+          <div class="hint-text">Must be your Gmail address for Gmail compose to work correctly</div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Default Send Method</label>
+          <select class="form-select" id="cfgSendMethod">
+            <option value="gmail">📧 Gmail (opens Chrome tab — recommended)</option>
+            <option value="mailto">🖥 System Mail App (mailto:)</option>
+          </select>
+          <div class="hint-text">Gmail mode opens mail.google.com compose pre-filled in a new tab. Make sure you're signed in to Gmail in Chrome.</div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Phone</label>
+          <input class="form-input" id="cfgPhone" placeholder="+91 9999999999">
+        </div>
+        <div class="form-row">
+          <label class="form-label">LinkedIn URL</label>
+          <input class="form-input" id="cfgLinkedIn" placeholder="linkedin.com/in/yourprofile">
+        </div>
+        <div class="form-row">
+          <label class="form-label">GitHub / Portfolio (optional)</label>
+          <input class="form-input" id="cfgPortfolio" placeholder="github.com/yourhandle">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Current Title / Skills Summary</label>
+          <input class="form-input" id="cfgTitle" placeholder="e.g. B.Tech CSE 2024 | AWS Certified | Python | DevOps Enthusiast">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Degree & College (for fresher emails)</label>
+          <input class="form-input" id="cfgDegree" placeholder="e.g. B.Tech Computer Science, VIT Vellore, 2024">
+          <div class="hint-text">AI uses this to write fresher-appropriate emails</div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Certifications (for fresher emails)</label>
+          <input class="form-input" id="cfgCerts" placeholder="e.g. AWS Cloud Practitioner, Google Cloud Associate, Docker Certified">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Email Tone</label>
+          <select class="form-select" id="cfgTone">
+            <option value="professional">Professional & Formal</option>
+            <option value="friendly">Friendly & Conversational</option>
+            <option value="direct">Direct & Concise</option>
+            <option value="enthusiastic">Enthusiastic & Energetic</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Email Signature Tagline (optional)</label>
+          <input class="form-input" id="cfgTagline" placeholder="e.g. Open to DevOps / Cloud roles | Bangalore-based">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Key Achievements (AI will reference these)</label>
+          <textarea class="form-textarea" id="cfgAchievements" placeholder="e.g. Reduced deployment time by 60% using CI/CD pipelines. Migrated 20TB database to AWS with zero downtime…"></textarea>
+        </div>
+
+        <div class="section-divider">Default Email Template</div>
+        <div class="form-row" style="margin-top:14px">
+          <label class="form-label">Quick Prompt Override (leave blank for auto)</label>
+          <textarea class="form-textarea" id="cfgPromptOverride" placeholder="Optional: Custom instruction for AI email generation, e.g. 'Always mention I am available immediately and willing to relocate'"></textarea>
+        </div>
+
+        <button class="btn btn-accent btn-full" onclick="saveConfig()">💾 Save All Settings</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ████ PAGE: DASHBOARD ████ -->
+<div class="page" id="page-dashboard">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Outreach <span>Dashboard</span></div>
+      <div class="page-sub">Complete history of sent emails · Contacted recruiters are filtered from the live feed</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost" onclick="exportCSV()">⬇ Export CSV</button>
+      <button class="btn btn-danger btn-sm" onclick="clearAllSent()" style="font-size:0.65em">🗑 Clear All</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stat-grid" style="grid-template-columns:repeat(5,1fr)">
+    <div class="stat-card">
+      <div class="stat-num" id="statTotal">0</div>
+      <div class="stat-label">Total Sent</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statToday">0</div>
+      <div class="stat-label">Today</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statCompanies">0</div>
+      <div class="stat-label">Companies</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statThisWeek">0</div>
+      <div class="stat-label">This Week</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statFresher" style="color:var(--success)">0</div>
+      <div class="stat-label">🌱 Fresher Roles</div>
+    </div>
+  </div>
+
+  <!-- Filters + Table -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">Sent Email Log</span>
+      <div style="display:flex;gap:8px">
+        <input class="filter-input" id="dashSearch" placeholder="Search name / company…" oninput="renderDashboard()" style="width:200px">
+      </div>
+    </div>
+    <div class="recruiter-table-wrap">
+      <div id="dashTableWrap">
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <p>No emails sent yet — start prospecting!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST CONTAINER ── -->
+<div id="toast-container"></div>
+
+<script>
+// ════════════════════════════════
+//  STATE
+// ════════════════════════════════
+let state = {
+  recruiters: [],
+  filtered: [],
+  selected: null,
+  emailMode: 'ai',
+  sendMethod: 'gmail',
+  currentSubject: '',
+  currentBody: '',
+  autoRefreshTimer: null,
+  autoRefreshCountdown: 0,
+  countdownInterval: null,
+  config: {}
+};
+
+const SENT_KEY = 'rr_sent_v2';
+const CONFIG_KEY = 'rr_config_v2';
+
+// ════════════════════════════════
+//  SAMPLE DATA
+// ════════════════════════════════
+const SAMPLE_DATA = [
+  // ── Experienced roles ──
+  { id:'s1', name:'Sunitha Yedikeri', company:'Zynga', city:'Bangalore', email:'syedikeri@zynga.com', phone:'+919916030333', hiringFor:'DevOps Engineer, Cloud Architect', linkedin:'https://linkedin.com/in/sunithayedikeri', source:'sample', expLevel:'experienced' },
+  { id:'s2', name:'Akanksha Tripathi', company:'JPMorgan Chase', city:'Noida', email:'akanksha.tripathi@chase.com', phone:'+919876543210', hiringFor:'Data Analyst, Cloud Administrator', linkedin:'https://linkedin.com/in/akanksharrjsk', source:'sample', expLevel:'experienced' },
+  { id:'s3', name:'Jignesh Saner', company:'Amazon', city:'Hyderabad', email:'jigsaner@amazon.com', phone:'+919876543211', hiringFor:'DevOps, Cloud Engineer, Data Engineer', linkedin:'https://linkedin.com/in/jigzsaner', source:'sample', expLevel:'experienced' },
+  { id:'s4', name:'Nikhita Sood', company:'American Express', city:'Gurugram', email:'nikhita.sood@aexp.com', phone:'+919876543212', hiringFor:'Data Analyst, Business Analyst, System Admin', linkedin:'https://linkedin.com/in/nikhita1311', source:'sample', expLevel:'experienced' },
+  { id:'s5', name:'Uday Kumar', company:'UST', city:'Bangalore', email:'ukumar@chooseust.org', phone:'+919876543213', hiringFor:'DevOps Engineer, Cloud Administrator, Data Engineer', linkedin:'https://linkedin.com/in/uday-kumar-28a01932', source:'sample', expLevel:'experienced' },
+  { id:'s6', name:'Priya Patel', company:'Accenture', city:'Bangalore', email:'priya.patel@accenture.com', phone:'+919876543214', hiringFor:'DevOps Engineer, Cloud Support, Data Analyst', linkedin:'', source:'sample', expLevel:'experienced' },
+  { id:'s7', name:'Rajesh Kumar', company:'Infosys', city:'Bangalore', email:'rajesh.kumar@infosys.com', phone:'+919876543215', hiringFor:'System Administrator, Cloud Support, Data Analyst', linkedin:'', source:'sample', expLevel:'experienced' },
+  { id:'s8', name:'Anjali Sharma', company:'Tech Mahindra', city:'Noida', email:'anjali.sharma@techmahindra.com', phone:'+919876543216', hiringFor:'DevOps Engineer, Cloud Architect, Data Engineer', linkedin:'', source:'sample', expLevel:'experienced' },
+  { id:'s9', name:'Vikram Singh', company:'HCL Technologies', city:'Gurugram', email:'vikram.singh@hcl.com', phone:'+919876543217', hiringFor:'Cloud Engineer, DevOps Specialist, Data Engineer', linkedin:'', source:'sample', expLevel:'experienced' },
+  { id:'s10', name:'Neha Malhotra', company:'Cognizant', city:'Noida', email:'neha.malhotra@cognizant.com', phone:'+919876543218', hiringFor:'IT Administrator, Cloud Support, Data Analyst', linkedin:'', source:'sample', expLevel:'experienced' },
+  { id:'s11', name:'Rohan Mehta', company:'Google', city:'Hyderabad', email:'rmehta@google.com', phone:'+919876543219', hiringFor:'Site Reliability Engineer, Cloud Engineer', linkedin:'', source:'sample', expLevel:'experienced' },
+  { id:'s12', name:'Kavya Nair', company:'Microsoft', city:'Hyderabad', email:'kavya.nair@microsoft.com', phone:'+919876543220', hiringFor:'Azure DevOps Engineer, Cloud Architect', linkedin:'', source:'sample', expLevel:'experienced' },
+  // ── Fresher / Entry-Level roles ──
+  { id:'f1', name:'Divya Menon', company:'Wipro', city:'Bangalore', email:'divya.menon@wipro.com', phone:'+919876500001', hiringFor:'Graduate Trainee – Cloud & DevOps, Fresher IT', linkedin:'', source:'sample', expLevel:'fresher' },
+  { id:'f2', name:'Saurabh Joshi', company:'TCS', city:'Pune', email:'saurabh.joshi@tcs.com', phone:'+919876500002', hiringFor:'Associate System Engineer (Fresher), Junior DevOps Trainee', linkedin:'', source:'sample', expLevel:'fresher' },
+  { id:'f3', name:'Meenakshi Iyer', company:'Capgemini', city:'Chennai', email:'meenakshi.iyer@capgemini.com', phone:'+919876500003', hiringFor:'Fresher Cloud Engineer, Entry Level Data Analyst', linkedin:'', source:'sample', expLevel:'fresher' },
+  { id:'f4', name:'Arjun Reddy', company:'Mphasis', city:'Hyderabad', email:'arjun.reddy@mphasis.com', phone:'+919876500004', hiringFor:'Junior Software Engineer (0-1 yr), Graduate IT Analyst', linkedin:'', source:'sample', expLevel:'fresher' },
+  { id:'f5', name:'Pooja Agarwal', company:'LTIMindtree', city:'Noida', email:'pooja.agarwal@ltimindtree.com', phone:'+919876500005', hiringFor:'Fresher DevOps, Campus Hire – Cloud Infrastructure', linkedin:'', source:'sample', expLevel:'fresher' },
+  { id:'f6', name:'Karan Gupta', company:'Hexaware', city:'Mumbai', email:'karan.gupta@hexaware.com', phone:'+919876500006', hiringFor:'Entry Level System Engineer, Fresher Linux Admin', linkedin:'', source:'sample', expLevel:'fresher' },
+  { id:'f7', name:'Nandini Pillai', company:'Persistent Systems', city:'Pune', email:'nandini.pillai@persistent.com', phone:'+919876500007', hiringFor:'Junior Cloud Engineer (Fresher OK), Trainee – AWS/GCP', linkedin:'', source:'sample', expLevel:'fresher' },
+  { id:'f8', name:'Rahul Srivastava', company:'Birlasoft', city:'Noida', email:'rahul.srivastava@birlasoft.com', phone:'+919876500008', hiringFor:'IT Fresher – DevOps Track, Campus Hire 2024/2025', linkedin:'', source:'sample', expLevel:'fresher' },
+  { id:'f9', name:'Simran Kaur', company:'Zensar Technologies', city:'Pune', email:'simran.kaur@zensar.com', phone:'+919876500009', hiringFor:'Fresher Software Trainee, Entry Level Data Engineer', linkedin:'', source:'sample', expLevel:'fresher' },
+  { id:'f10', name:'Tejas Bhat', company:'Mastech Digital', city:'Bangalore', email:'tejas.bhat@mastech.com', phone:'+919876500010', hiringFor:'Junior Cloud Support Engineer, Graduate Hire – DevOps', linkedin:'', source:'sample', expLevel:'fresher' },
+];
+
+// ════════════════════════════════
+//  PAGE NAVIGATION
+// ════════════════════════════════
+function switchPage(page, tabEl) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  if (tabEl) tabEl.classList.add('active');
+  if (page === 'dashboard') renderDashboard();
+  if (page === 'config') loadConfigUI();
+  if (page === 'prospecting') refreshProfileQuick();
+}
+
+// ════════════════════════════════
+//  MODEL BADGE
+// ════════════════════════════════
+function updateModelBadge() {
+  const sel = document.getElementById('cfgGroqModel');
+  const badge = document.getElementById('modelStatusBadge');
+  if (!sel || !badge) return;
+  const val = sel.value;
+  const isLegacy = val.includes('llama3-') || val.includes('mixtral');
+  badge.textContent = isLegacy ? '⚠ legacy model' : '● active';
+  badge.style.color = isLegacy ? 'var(--accent2)' : 'var(--success)';
+  badge.style.background = isLegacy ? 'rgba(232,93,60,0.08)' : 'rgba(60,212,154,0.08)';
+  badge.style.borderColor = isLegacy ? 'rgba(232,93,60,0.2)' : 'rgba(60,212,154,0.2)';
+}
+
+// ════════════════════════════════
+//  CONFIG LOAD / SAVE
+// ════════════════════════════════
+function loadConfig() {
+  try {
+    const raw = localStorage.getItem(CONFIG_KEY);
+    state.config = raw ? JSON.parse(raw) : {};
+    // Migrate away from decommissioned mixtral model
+    if (!state.config.groqModel || state.config.groqModel === 'mixtral-8x7b-32768') {
+      state.config.groqModel = 'llama-3.3-70b-versatile';
+    }
+    // Apply saved send method
+    state.sendMethod = state.config.sendMethod || 'gmail';
+  } catch(e) { state.config = {}; }
+}
+
+function saveConfig() {
+  const cfg = {
+    vibeKey: document.getElementById('cfgVibeKey').value.trim(),
+    vibeEndpoint: document.getElementById('cfgVibeEndpoint').value.trim(),
+    apifyKey: document.getElementById('cfgApifyKey').value.trim(),
+    apifyActor: document.getElementById('cfgApifyActor').value.trim(),
+    keywords: document.getElementById('cfgKeywords').value.trim(),
+    cities: document.getElementById('cfgCities').value.trim(),
+    groqKey: document.getElementById('cfgGroqKey').value.trim(),
+    groqModel: document.getElementById('cfgGroqModel').value,
+    sendMethod: document.getElementById('cfgSendMethod').value,
+    primarySource: document.getElementById('cfgPrimarySource').value,
+    expTarget: document.getElementById('cfgExpTarget').value,
+    fresherKeywords: document.getElementById('cfgFresherKeywords').value.trim(),
+    maxResults: document.getElementById('cfgMaxResults').value,
+    hideHours: document.getElementById('cfgHideHours').value,
+    name: document.getElementById('cfgName').value.trim(),
+    email: document.getElementById('cfgEmail').value.trim(),
+    phone: document.getElementById('cfgPhone').value.trim(),
+    linkedIn: document.getElementById('cfgLinkedIn').value.trim(),
+    portfolio: document.getElementById('cfgPortfolio').value.trim(),
+    title: document.getElementById('cfgTitle').value.trim(),
+    degree: document.getElementById('cfgDegree').value.trim(),
+    certs: document.getElementById('cfgCerts').value.trim(),
+    tone: document.getElementById('cfgTone').value,
+    tagline: document.getElementById('cfgTagline').value.trim(),
+    achievements: document.getElementById('cfgAchievements').value.trim(),
+    promptOverride: document.getElementById('cfgPromptOverride').value.trim(),
+  };
+  state.config = cfg;
+  localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg));
+  updateApiPills();
+  refreshProfileQuick();
+  toast('✓ Configuration saved!', 'success');
+}
+
+function loadConfigUI() {
+  const c = state.config;
+  const set = (id, val) => { const el = document.getElementById(id); if(el && val !== undefined) el.value = val; };
+  set('cfgVibeKey', c.vibeKey);
+  set('cfgVibeEndpoint', c.vibeEndpoint || 'https://api.vibeprospecting.ai/v1/recruiters');
+  set('cfgApifyKey', c.apifyKey);
+  set('cfgApifyActor', c.apifyActor || 'apify/linkedin-jobs-scraper');
+  set('cfgKeywords', c.keywords);
+  set('cfgCities', c.cities);
+  set('cfgGroqKey', c.groqKey);
+  // ✅ Default to LLaMA 3.3 70B — never allow decommissioned mixtral
+  const safeModel = (c.groqModel && c.groqModel !== 'mixtral-8x7b-32768') ? c.groqModel : 'llama-3.3-70b-versatile';
+  set('cfgGroqModel', safeModel);
+  set('cfgSendMethod', c.sendMethod || 'gmail');
+  set('cfgPrimarySource', c.primarySource || 'sample');
+  set('cfgExpTarget', c.expTarget || 'all');
+  set('cfgFresherKeywords', c.fresherKeywords || 'fresher DevOps, graduate trainee cloud, entry level data analyst, campus hire IT');
+  set('cfgMaxResults', c.maxResults || '50');
+  set('cfgHideHours', c.hideHours || '168');
+  set('cfgName', c.name);
+  set('cfgEmail', c.email);
+  set('cfgPhone', c.phone);
+  set('cfgLinkedIn', c.linkedIn);
+  set('cfgPortfolio', c.portfolio);
+  set('cfgTitle', c.title);
+  set('cfgDegree', c.degree);
+  set('cfgCerts', c.certs);
+  set('cfgTone', c.tone || 'professional');
+  set('cfgTagline', c.tagline);
+  set('cfgAchievements', c.achievements);
+  set('cfgPromptOverride', c.promptOverride);
+  updateModelBadge();
+}
+
+function updateApiPills() {
+  const c = state.config;
+  const setpill = (id, connected) => {
+    const el = document.getElementById(id);
+    el.className = 'api-pill' + (connected ? ' connected' : '');
+  };
+  setpill('pill-vibe', !!c.vibeKey);
+  setpill('pill-apify', !!c.apifyKey);
+  setpill('pill-groq', !!c.groqKey);
+}
+
+function refreshProfileQuick() {
+  const c = state.config;
+  document.getElementById('qName').textContent = c.name || '—';
+  document.getElementById('qEmail').textContent = c.email || '—';
+  document.getElementById('qPhone').textContent = c.phone || '—';
+  document.getElementById('qLI').textContent = c.linkedIn || '—';
+  // Sync send method toggle to saved preference
+  setSendMethod(c.sendMethod || 'gmail');
+}
+
+// ════════════════════════════════
+//  SENT LOG
+// ════════════════════════════════
+function getSent() {
+  try { return JSON.parse(localStorage.getItem(SENT_KEY) || '[]'); } catch(e) { return []; }
+}
+
+function addSent(recruiter, subject, body) {
+  const sent = getSent();
+  sent.unshift({
+    id: recruiter.id || Date.now(),
+    name: recruiter.name,
+    company: recruiter.company,
+    email: recruiter.email,
+    city: recruiter.city,
+    hiringFor: recruiter.hiringFor,
+    subject,
+    body,
+    sentAt: new Date().toISOString()
+  });
+  localStorage.setItem(SENT_KEY, JSON.stringify(sent));
+}
+
+function isSent(recruiter) {
+  const sent = getSent();
+  const hours = parseInt(state.config.hideHours || '168');
+  const cutoff = Date.now() - hours * 3600000;
+  return sent.some(s =>
+    (s.email === recruiter.email || s.name === recruiter.name) &&
+    new Date(s.sentAt).getTime() > cutoff
+  );
+}
+
+// ════════════════════════════════
+//  FETCH RECRUITERS
+// ════════════════════════════════
+async function fetchRecruiters() {
+  const wrap = document.getElementById('recruiterTableWrap');
+  wrap.innerHTML = `<div class="loading-state"><div class="spinner"></div><span>Fetching live recruiter data…</span></div>`;
+  document.getElementById('recruiterCount').textContent = 'Loading…';
+
+  const expTargetSel = document.getElementById('filterExpLevel');
+  if (expTargetSel && state.config.expTarget) expTargetSel.value = state.config.expTarget;
+
+  const src = state.config.primarySource || 'sample';
+  let results = [];
+
+  try {
+    if (src === 'sample') {
+      await delay(1000);
+      results = SAMPLE_DATA;
+    } else if (src === 'vibe') {
+      results = await fetchFromVibe();
+    } else if (src === 'apify') {
+      results = await fetchFromApify();
+    } else if (src === 'both') {
+      const [vibe, apify] = await Promise.allSettled([fetchFromVibe(), fetchFromApify()]);
+      const all = [
+        ...(vibe.status === 'fulfilled' ? vibe.value : []),
+        ...(apify.status === 'fulfilled' ? apify.value : [])
+      ];
+      const seen = new Set();
+      results = all.filter(r => { if(seen.has(r.email)) return false; seen.add(r.email); return true; });
+    }
+  } catch(err) {
+    toast('⚠ Fetch error: ' + err.message + ' — showing sample data', 'error');
+    results = SAMPLE_DATA;
+  }
+
+  results = results.map((r, i) => ({ ...r, id: r.id || ('r' + i + Date.now()) }));
+
+  const max = parseInt(state.config.maxResults || '50');
+  state.recruiters = results.slice(0, max);
+  applyFilters();
+
+  const hidden = results.filter(r => isSent(r)).length;
+  const shown = state.filtered.length;
+  toast(`✓ Loaded ${results.length} recruiters · ${hidden} contacted (hidden) · ${shown} shown`, 'success');
+  document.getElementById('recruiterCount').textContent = `${shown} results`;
+}
+
+async function fetchFromVibe() {
+  const key = state.config.vibeKey;
+  if (!key) throw new Error('Vibe Prospecting API key not set');
+  const endpoint = state.config.vibeEndpoint || 'https://api.vibeprospecting.ai/v1/recruiters';
+  const cities = state.config.cities || 'Bangalore,Hyderabad,Noida,Gurugram';
+  let keywords = state.config.keywords || 'DevOps,Cloud';
+
+  if (state.config.expTarget === 'fresher') {
+    const fkw = state.config.fresherKeywords || 'fresher,graduate trainee,entry level,campus hire';
+    keywords = keywords + ',' + fkw;
+  }
+
+  const expParam = state.config.expTarget && state.config.expTarget !== 'all'
+    ? `&experience=${encodeURIComponent(state.config.expTarget)}`
+    : '';
+
+  const url = `${endpoint}?keywords=${encodeURIComponent(keywords)}&cities=${encodeURIComponent(cities)}&limit=${state.config.maxResults || 50}${expParam}`;
+
+  const res = await fetch(url, {
+    headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' }
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Vibe API error ${res.status}: ${err.substring(0,100)}`);
+  }
+
+  const data = await res.json();
+  const raw = data.data || data.results || data.recruiters || data || [];
+  return raw.map(r => ({
+    id: r.id || r._id,
+    name: r.name || r.full_name || r.firstName + ' ' + r.lastName,
+    company: r.company || r.organization || r.employer,
+    city: r.city || r.location,
+    email: r.email || r.emailAddress,
+    phone: r.phone || r.phoneNumber || '',
+    hiringFor: r.hiringFor || r.roles || r.openPositions || r.title || '',
+    linkedin: r.linkedin || r.linkedinUrl || '',
+    source: 'vibe'
+  }));
+}
+
+async function fetchFromApify() {
+  const apiKey = state.config.apifyKey;
+  if (!apiKey) throw new Error('Apify API key not set');
+  const actorId = state.config.apifyActor || 'apify/linkedin-jobs-scraper';
+
+  let baseKeywords = (state.config.keywords || 'DevOps Engineer').split(',').map(k => k.trim());
+
+  if (state.config.expTarget === 'fresher') {
+    const fresherKws = (state.config.fresherKeywords || 'fresher DevOps, graduate trainee cloud, entry level data analyst, campus hire IT')
+      .split(',').map(k => k.trim());
+    baseKeywords = [...new Set([...baseKeywords, ...fresherKws])];
+  }
+
+  const keywords = baseKeywords;
+  const cities = (state.config.cities || 'Bangalore').split(',').map(c => c.trim());
+
+  const runRes = await fetch(`https://api.apify.com/v2/acts/${encodeURIComponent(actorId)}/runs?token=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      keywords: keywords,
+      location: cities.join(', '),
+      maxResults: parseInt(state.config.maxResults || '50'),
+      country: 'IN'
+    })
+  });
+
+  if (!runRes.ok) {
+    const err = await runRes.text();
+    throw new Error(`Apify run error ${runRes.status}: ${err.substring(0,120)}`);
+  }
+
+  const runData = await runRes.json();
+  const runId = runData.data?.id;
+  if (!runId) throw new Error('Apify did not return a run ID');
+
+  let dataset = null;
+  for (let i = 0; i < 12; i++) {
+    await delay(5000);
+    const statusRes = await fetch(`https://api.apify.com/v2/actor-runs/${runId}?token=${apiKey}`);
+    const statusData = await statusRes.json();
+    const status = statusData.data?.status;
+    if (status === 'SUCCEEDED') {
+      const dsId = statusData.data?.defaultDatasetId;
+      const dsRes = await fetch(`https://api.apify.com/v2/datasets/${dsId}/items?token=${apiKey}&limit=100`);
+      dataset = await dsRes.json();
+      break;
+    }
+    if (status === 'FAILED' || status === 'ABORTED') {
+      throw new Error(`Apify actor ${status}`);
+    }
+  }
+
+  if (!dataset || !dataset.length) throw new Error('Apify returned no results');
+
+  return dataset.map((item, i) => ({
+    id: 'ap' + i + Date.now(),
+    name: item.posterName || item.hiringManagerName || item.recruiterName || 'Recruiter',
+    company: item.companyName || item.company || '',
+    city: item.location || item.city || '',
+    email: item.posterEmail || item.email || '',
+    phone: '',
+    hiringFor: item.title || item.jobTitle || item.position || '',
+    linkedin: item.posterLinkedInUrl || item.linkedInUrl || item.url || '',
+    source: 'apify'
+  })).filter(r => r.company);
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ════════════════════════════════
+//  FILTER & RENDER TABLE
+// ════════════════════════════════
+function applyFilters() {
+  const cityQ = document.getElementById('filterCity').value.toLowerCase().trim();
+  const roleQ = document.getElementById('filterRole').value.toLowerCase().trim();
+  const expQ = document.getElementById('filterExpLevel').value;
+
+  const FRESHER_KEYWORDS = ['fresher','graduate','trainee','entry level','entry-level','junior','campus hire','0-1','0 - 1','associate engineer','intern'];
+
+  state.filtered = state.recruiters.filter(r => {
+    if (isSent(r)) return false;
+    if (cityQ && !r.city.toLowerCase().includes(cityQ)) return false;
+    if (roleQ && !r.hiringFor.toLowerCase().includes(roleQ)) return false;
+
+    if (expQ !== 'all') {
+      const rolesLower = r.hiringFor.toLowerCase();
+      const isFresherRole = r.expLevel === 'fresher' || FRESHER_KEYWORDS.some(kw => rolesLower.includes(kw));
+      if (expQ === 'fresher' && !isFresherRole) return false;
+      if (expQ === 'experienced' && isFresherRole) return false;
+    }
+    return true;
+  });
+
+  document.getElementById('recruiterCount').textContent = `${state.filtered.length} results`;
+  renderTable();
+}
+
+function renderTable() {
+  const wrap = document.getElementById('recruiterTableWrap');
+
+  if (!state.filtered.length) {
+    wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">📡</div><p>${state.recruiters.length ? 'No recruiters match filters (or all contacted)' : 'Hit ⟳ Refresh Now to load recruiters'}</p></div>`;
+    return;
+  }
+
+  const FRESHER_KEYWORDS = ['fresher','graduate','trainee','entry level','entry-level','junior','campus hire','0-1','0 - 1','associate engineer','intern'];
+
+  const rows = state.filtered.map((r, i) => {
+    const roles = r.hiringFor.split(',').slice(0,3).map(role =>
+      `<span class="role-tag">${role.trim()}</span>`
+    ).join('');
+
+    const rolesLower = r.hiringFor.toLowerCase();
+    const isFresher = r.expLevel === 'fresher' || FRESHER_KEYWORDS.some(kw => rolesLower.includes(kw));
+    const isNew = r.source === 'apify' || r.source === 'vibe';
+
+    const fresherBadge = isFresher
+      ? `<span style="display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:0.62em;color:var(--success);background:rgba(60,212,154,0.1);border:1px solid rgba(60,212,154,0.25);padding:2px 7px;border-radius:20px;margin-left:5px;">🌱 FRESHER</span>`
+      : '';
+    const newBadge = isNew ? `<span class="new-badge">● NEW</span>` : '';
+
+    return `
+      <tr>
+        <td>
+          <div class="recruiter-name-cell">${esc(r.name)} ${fresherBadge} ${newBadge}</div>
+          <div class="email-tag">${esc(r.email || '—')}</div>
+        </td>
+        <td><span class="company-cell">${esc(r.company)}</span></td>
+        <td><div class="roles-cell">${roles}</div></td>
+        <td><span class="city-tag">${esc(r.city)}</span></td>
+        <td>
+          <button class="btn btn-accent btn-sm" onclick="selectRecruiter(${i})">Select →</button>
+        </td>
+      </tr>`;
+  }).join('');
+
+  wrap.innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Recruiter</th>
+        <th>Company</th>
+        <th>Hiring For</th>
+        <th>City</th>
+        <th>Action</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+// ════════════════════════════════
+//  SELECT RECRUITER
+// ════════════════════════════════
+function selectRecruiter(index) {
+  state.selected = state.filtered[index];
+  const r = state.selected;
+
+  const FRESHER_KW = ['fresher','graduate','trainee','entry level','entry-level','junior','campus hire','0-1','associate engineer','intern'];
+  const isFresherRole = r.expLevel === 'fresher' || FRESHER_KW.some(kw => r.hiringFor.toLowerCase().includes(kw));
+
+  document.getElementById('noSelectionMsg').style.display = 'none';
+  document.getElementById('composerBody').style.display = 'block';
+  document.getElementById('selectedTag').textContent = r.name;
+
+  document.getElementById('bName').innerHTML = r.name +
+    (isFresherRole ? ' <span style="font-size:0.65em;color:var(--success);font-family:var(--mono);background:rgba(60,212,154,0.1);border:1px solid rgba(60,212,154,0.25);padding:2px 8px;border-radius:20px;margin-left:6px;">🌱 FRESHER ROLE</span>' : '');
+  document.getElementById('bCompany').textContent = r.company + ' · ' + r.city;
+  document.getElementById('bMeta').textContent = r.hiringFor;
+
+  document.getElementById('emailPreview').textContent = 'Hit Generate to craft a personalized outreach email…';
+  document.getElementById('emailPreview').classList.add('placeholder');
+
+  const firstRole = r.hiringFor.split(',')[0].trim();
+  document.getElementById('emailSubject').value = isFresherRole
+    ? `Fresher Candidate Interested in ${firstRole} at ${r.company}`
+    : `Exploring ${firstRole} Opportunities at ${r.company}`;
+  state.currentBody = '';
+
+  document.querySelector('.email-panel').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+// ════════════════════════════════
+//  EMAIL MODE TOGGLE
+// ════════════════════════════════
+function setEmailMode(mode) {
+  state.emailMode = mode;
+  document.getElementById('modeAI').style.display = mode === 'ai' ? 'block' : 'none';
+  document.getElementById('modeCustom').style.display = mode === 'custom' ? 'block' : 'none';
+  document.getElementById('toggleAI').className = 'toggle-btn' + (mode === 'ai' ? ' active' : '');
+  document.getElementById('toggleCustom').className = 'toggle-btn' + (mode === 'custom' ? ' active' : '');
+}
+
+// ════════════════════════════════
+//  AI EMAIL GENERATION  ✅ FIXED
+// ════════════════════════════════
+async function generateEmailAI() {
+  const r = state.selected;
+  if (!r) { toast('Select a recruiter first', 'error'); return; }
+  const groqKey = state.config.groqKey;
+  if (!groqKey) { toast('Add your Groq API key in Config', 'error'); return; }
+
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="ai-typing">|</span> Generating…';
+
+  const preview = document.getElementById('emailPreview');
+  preview.textContent = '';
+  preview.classList.remove('placeholder');
+
+  const c = state.config;
+  const subject = document.getElementById('emailSubject').value;
+  const tone = c.tone || 'professional';
+  const toneMap = {
+    professional: 'formal and professional',
+    friendly: 'warm and conversational',
+    direct: 'direct and concise',
+    enthusiastic: 'enthusiastic and energetic'
+  };
+
+  const FRESHER_KW = ['fresher','graduate','trainee','entry level','entry-level','junior','campus hire','0-1','associate engineer','intern'];
+  const rolesLower = r.hiringFor.toLowerCase();
+  const isFresherRole = r.expLevel === 'fresher' || FRESHER_KW.some(kw => rolesLower.includes(kw));
+
+  const experienceContext = isFresherRole
+    ? `IMPORTANT: This is a FRESHER / ENTRY-LEVEL role. The candidate is a recent graduate with NO full-time work experience. The email must:
+- Highlight academic projects, college coursework, personal/hobby projects, and certifications
+- Emphasize eagerness to learn, adaptability, and fresh perspective
+- Do NOT mention years of professional experience
+- Reference any internships only if mentioned in achievements
+- Sound enthusiastic and passionate, not apologetic about being a fresher`
+    : `This is an EXPERIENCED role. Highlight relevant professional experience and concrete achievements.`;
+
+  const prompt = `${c.promptOverride ? c.promptOverride + '\n\n' : ''}Write a ${toneMap[tone]} cold outreach email to a recruiter.
+
+${experienceContext}
+
+RECRUITER:
+Name: ${r.name}
+Company: ${r.company}
+Location: ${r.city}
+Actively hiring for: ${r.hiringFor}
+
+MY DETAILS:
+Name: ${c.name || 'Job Seeker'}
+Email: ${c.email || ''}
+Phone: ${c.phone || ''}
+LinkedIn: ${c.linkedIn || ''}
+${c.portfolio ? 'Portfolio/GitHub: ' + c.portfolio : ''}
+${c.title ? 'Background/Skills: ' + c.title : ''}
+${isFresherRole && c.degree ? 'Education: ' + c.degree : ''}
+${isFresherRole && c.certs ? 'Certifications: ' + c.certs : ''}
+${c.achievements ? 'Projects / Achievements:\n' + c.achievements : ''}
+${c.tagline ? 'Tagline: ' + c.tagline : ''}
+
+EMAIL SUBJECT: "${subject}"
+
+Write ONLY the email body (no subject line, no markdown, no placeholders like [Your Name]).
+- Open with a personalized hook referencing ${r.company} or ${r.hiringFor.split(',')[0].trim()}
+- ${isFresherRole ? 'Mention educational background, a standout project, or relevant certification' : 'Briefly state key professional value proposition'}
+- Express genuine interest in the specific roles they are hiring for
+- Include ONE specific project or achievement if provided
+- Clear CTA to connect or schedule a brief call
+- Sign off with full contact details (name, phone, LinkedIn${c.portfolio ? ', portfolio' : ''})
+- 3-4 short paragraphs max
+- Do NOT use placeholder brackets like [Your Name]
+- Do NOT fabricate experience or companies not provided`;
+
+  try {
+    // ✅ FIXED: Use saved model, falling back to llama-3.3-70b-versatile (NOT mixtral)
+    const model = (c.groqModel && c.groqModel !== 'mixtral-8x7b-32768')
+      ? c.groqModel
+      : 'llama-3.3-70b-versatile';
+
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
+      body: JSON.stringify({
+        model: model,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.72,
+        max_tokens: 900
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || 'Groq API error ' + res.status);
+    }
+
+    const data = await res.json();
+    const body = data.choices[0].message.content.trim();
+    preview.textContent = body;
+    state.currentBody = body;
+    state.currentSubject = subject;
+    toast('✓ Email generated!', 'success');
+  } catch(err) {
+    toast('Groq error: ' + err.message, 'error');
+    preview.textContent = 'Error generating email. Check your Groq API key and model selection in Config.';
+    preview.classList.add('placeholder');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '✨ Generate Email';
+  }
+}
+
+// ════════════════════════════════
+//  SEND METHOD TOGGLE
+// ════════════════════════════════
+function setSendMethod(method) {
+  state.sendMethod = method;
+  const gmailBtn = document.getElementById('smGmail');
+  const mailtoBtn = document.getElementById('smMailto');
+  const sendBtnIcon = document.getElementById('sendBtnIcon');
+  const sendBtnLabel = document.getElementById('sendBtnLabel');
+  const hint = document.getElementById('sendMethodHint');
+  if (!gmailBtn) return; // composer not rendered yet
+
+  gmailBtn.className = 'toggle-btn' + (method === 'gmail' ? ' active' : '');
+  mailtoBtn.className = 'toggle-btn' + (method === 'mailto' ? ' active' : '');
+
+  if (method === 'gmail') {
+    if (sendBtnIcon) sendBtnIcon.textContent = '📧';
+    if (sendBtnLabel) sendBtnLabel.textContent = 'Send via Gmail';
+    if (hint) hint.textContent = 'Opens Gmail compose in a new tab — pre-filled and ready to send';
+  } else {
+    if (sendBtnIcon) sendBtnIcon.textContent = '📤';
+    if (sendBtnLabel) sendBtnLabel.textContent = 'Send via Mail App';
+    if (hint) hint.textContent = 'Opens your system default email client via mailto:';
+  }
+}
+
+// ════════════════════════════════
+//  SEND EMAIL  ✅ Gmail compose
+// ════════════════════════════════
+function sendEmailAction() {
+  const r = state.selected;
+  if (!r) { toast('No recruiter selected', 'error'); return; }
+  if (!state.currentBody) { toast('Generate or write an email first', 'error'); return; }
+
+  const subject = state.currentSubject || document.getElementById('emailSubject').value;
+  const body = state.currentBody;
+  const method = state.sendMethod || state.config.sendMethod || 'gmail';
+
+  if (method === 'gmail') {
+    // Gmail web compose URL — opens pre-filled compose in a new Chrome tab
+    // Uses mail.google.com/mail/?view=cm which works when logged in to Gmail
+    const gmailUrl = 'https://mail.google.com/mail/?view=cm'
+      + '&fs=1'
+      + '&to=' + encodeURIComponent(r.email)
+      + '&su=' + encodeURIComponent(subject)
+      + '&body=' + encodeURIComponent(body);
+    window.open(gmailUrl, '_blank');
+    toast(`📧 Gmail compose opened for ${r.name} — review & click Send in Gmail`, 'success');
+  } else {
+    // Fallback: system mail app via mailto
+    const mailtoLink = `mailto:${r.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoLink;
+    toast(`📤 Mail app opened for ${r.name}`, 'success');
+  }
+
+  // Mark as contacted
+  addSent(r, subject, body);
+
+  // Remove from feed after short delay
+  setTimeout(() => {
+    applyFilters();
+    state.selected = null;
+    document.getElementById('composerBody').style.display = 'none';
+    document.getElementById('noSelectionMsg').style.display = 'block';
+    document.getElementById('selectedTag').textContent = 'None selected';
+  }, 1500);
+}
+
+function useCustom() {
+  const subj = document.getElementById('customSubject').value.trim();
+  const body = document.getElementById('customBody').value.trim();
+  if (!subj || !body) { toast('Enter both subject and body', 'error'); return; }
+  state.currentSubject = subj;
+  state.currentBody = body;
+  document.getElementById('emailSubject').value = subj;
+  document.getElementById('emailPreview').textContent = body;
+  document.getElementById('emailPreview').classList.remove('placeholder');
+  setEmailMode('ai');
+  sendEmailAction();
+}
+
+function copyEmail() {
+  if (!state.currentBody) { toast('No email to copy', 'error'); return; }
+  navigator.clipboard.writeText(`Subject: ${state.currentSubject}\n\n${state.currentBody}`)
+    .then(() => toast('✓ Copied to clipboard', 'success'))
+    .catch(() => toast('Copy failed', 'error'));
+}
+
+// ════════════════════════════════
+//  AUTO REFRESH
+// ════════════════════════════════
+function setAutoRefresh() {
+  clearInterval(state.autoRefreshTimer);
+  clearInterval(state.countdownInterval);
+  const seconds = parseInt(document.getElementById('autoRefreshInterval').value);
+  document.getElementById('timerDisplay').textContent = seconds ? formatTime(seconds) : '—';
+
+  if (!seconds) return;
+  state.autoRefreshCountdown = seconds;
+
+  state.countdownInterval = setInterval(() => {
+    state.autoRefreshCountdown--;
+    document.getElementById('timerDisplay').textContent = formatTime(state.autoRefreshCountdown);
+    if (state.autoRefreshCountdown <= 0) {
+      state.autoRefreshCountdown = seconds;
+      fetchRecruiters();
+    }
+  }, 1000);
+}
+
+function formatTime(s) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return m > 0 ? `${m}m ${sec}s` : `${sec}s`;
+}
+
+// ════════════════════════════════
+//  DASHBOARD
+// ════════════════════════════════
+function renderDashboard() {
+  const all = getSent();
+  const query = document.getElementById('dashSearch')?.value.toLowerCase() || '';
+  const filtered = query ? all.filter(s =>
+    s.name.toLowerCase().includes(query) || s.company.toLowerCase().includes(query)
+  ) : all;
+
+  const now = new Date();
+  const today = all.filter(s => {
+    const d = new Date(s.sentAt);
+    return d.toDateString() === now.toDateString();
+  });
+  const thisWeek = all.filter(s => (now - new Date(s.sentAt)) < 7 * 86400000);
+  const companies = new Set(all.map(s => s.company)).size;
+
+  const FRESHER_KW_DASH = ['fresher','graduate','trainee','entry level','entry-level','junior','campus hire','0-1','associate engineer','intern'];
+  const fresherCount = all.filter(s => FRESHER_KW_DASH.some(kw => (s.hiringFor||'').toLowerCase().includes(kw))).length;
+
+  document.getElementById('statTotal').textContent = all.length;
+  document.getElementById('statToday').textContent = today.length;
+  document.getElementById('statCompanies').textContent = companies;
+  document.getElementById('statThisWeek').textContent = thisWeek.length;
+  document.getElementById('statFresher').textContent = fresherCount;
+
+  const wrap = document.getElementById('dashTableWrap');
+  if (!filtered.length) {
+    wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>No emails sent yet</p></div>`;
+    return;
+  }
+
+  const rows = filtered.map((s, i) => {
+    const FRESHER_KW_DASH = ['fresher','graduate','trainee','entry level','entry-level','junior','campus hire','0-1','associate engineer','intern'];
+    const isFr = FRESHER_KW_DASH.some(kw => (s.hiringFor||'').toLowerCase().includes(kw));
+    return `
+    <tr>
+      <td>
+        <div style="font-weight:600;color:var(--text)">${esc(s.name)}</div>
+        <div class="email-tag">${esc(s.email)}</div>
+      </td>
+      <td><span class="sent-company">${esc(s.company)}</span><br><span class="sent-time">${esc(s.city||'')}</span></td>
+      <td>
+        <div class="sent-roles">${esc(s.hiringFor||'')}</div>
+        ${isFr ? '<span style="font-family:var(--mono);font-size:0.62em;color:var(--success);">🌱 Fresher Role</span>' : ''}
+      </td>
+      <td><div class="sent-preview" title="${esc(s.subject)}">${esc(s.subject)}</div></td>
+      <td><div class="sent-time">${formatDate(s.sentAt)}</div></td>
+      <td><span class="sent-badge">✓ SENT</span></td>
+      <td><button class="btn-delete" onclick="deleteSent(${i})">✕ Remove</button></td>
+    </tr>`}).join('');
+
+  wrap.innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Recruiter</th><th>Company</th><th>Roles</th><th>Subject</th><th>Sent At</th><th>Status</th><th></th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function deleteSent(index) {
+  const all = getSent();
+  const query = document.getElementById('dashSearch')?.value.toLowerCase() || '';
+  const filtered = query ? all.filter(s =>
+    s.name.toLowerCase().includes(query) || s.company.toLowerCase().includes(query)
+  ) : all;
+  const item = filtered[index];
+  const newAll = all.filter(s => s.sentAt !== item.sentAt);
+  localStorage.setItem(SENT_KEY, JSON.stringify(newAll));
+  toast('✓ Removed from sent log', 'success');
+  renderDashboard();
+  applyFilters();
+}
+
+function clearAllSent() {
+  if (!confirm('Clear ALL sent history? Recruiter feed will show them again.')) return;
+  localStorage.setItem(SENT_KEY, '[]');
+  toast('✓ Sent history cleared', 'success');
+  renderDashboard();
+  applyFilters();
+}
+
+function exportCSV() {
+  const all = getSent();
+  if (!all.length) { toast('No data to export', 'error'); return; }
+  const header = 'Name,Company,Email,City,Hiring For,Subject,Sent At';
+  const rows = all.map(s =>
+    [s.name, s.company, s.email, s.city, s.hiringFor, s.subject, s.sentAt]
+      .map(v => `"${(v||'').replace(/"/g,'""')}"`)
+      .join(',')
+  );
+  const csv = [header, ...rows].join('\n');
+  const blob = new Blob([csv], { type:'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'recruiter_outreach_' + Date.now() + '.csv';
+  a.click(); URL.revokeObjectURL(url);
+  toast('✓ CSV exported', 'success');
+}
+
+// ════════════════════════════════
+//  TOAST
+// ════════════════════════════════
+function toast(msg, type = 'success') {
+  const container = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = `<span>${type === 'success' ? '✓' : '⚠'}</span> ${msg}`;
+  container.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 400); }, 4000);
+}
+
+// ════════════════════════════════
+//  UTILS
+// ════════════════════════════════
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatDate(iso) {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-IN', { day:'2-digit', month:'short' }) + ' ' +
+           d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+  } catch(e) { return iso; }
+}
+
+// ════════════════════════════════
+//  INIT
+// ════════════════════════════════
+window.addEventListener('load', () => {
+  loadConfig();
+  updateApiPills();
+  refreshProfileQuick();
+  loadConfigUI();
+
+  state.recruiters = SAMPLE_DATA;
+  applyFilters();
+});
+</script>
+</body>
+</html>
